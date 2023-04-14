@@ -17,7 +17,7 @@ The bot is tailored to use the tradingview indicator "Machine Learning: Lorentzi
 Check https://www.youtube.com/watch?v=AdINVvnJfX4 by Justin Dehorty to understand how the indicator works.
 
 
-It is an iteration of:
+The tradebot is an refined iteration of:
 
 TradingView Strategy Alert Webhook that buys and sells crypto with the Binance API
 
