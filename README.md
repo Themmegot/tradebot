@@ -6,6 +6,7 @@ Set up the needed files for your python environment by adding the requirements: 
 usage: 
 
 export FLASK_ENV=developement
+
 export FLASK_DEBUG=on
 
 then
