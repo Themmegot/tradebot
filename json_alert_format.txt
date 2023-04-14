@@ -1,0 +1,38 @@
+{
+	"passphrase": "<passphrase>",
+	"time": "{{timenow}}",
+	"exchange": "{{exchange}}",
+	"ticker": "BTCBUSD",
+	"action": "Close Long|Close Short",
+        "side": "SELL|BUY",
+        "quantity":"0.007",
+        "order_id":"Close",
+	"bar": {
+		"time": "{{time}}",
+		"open": "{{open}}",
+		"high": "{{high}}",
+		"low": "{{low}}",
+		"close": "{{close}}",
+		"volume": "{{volume}}"
+	}
+}
+
+{
+	"passphrase": "<passphrase>",
+	"time": "{{timenow}}",
+	"exchange": "{{exchange}}",
+	"ticker": "BTCBUSD",
+	"action": "Open Short|Open Long",
+        "side": "SELL|BUY",
+        "quantity":"0.007",
+        "order_id":"Open",
+	"bar": {
+		"time": "{{time}}",
+		"open": "{{open}}",
+		"high": "{{high}}",
+		"low": "{{low}}",
+		"close": "{{close}}",
+		"volume": "{{volume}}"
+	}
+}
+
