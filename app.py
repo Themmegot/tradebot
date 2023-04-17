@@ -7,42 +7,33 @@ app = Flask(__name__)
 
 client = Client(config.API_KEY, config.API_SECRET, tld='com')
 
-def my_info(symbol):
-
-    account_balance = client.futures_account_balance()
-    print(account_balance)
-
-    open_orders = client.futures_get_open_orders(symbol=symbol)
-    print(open_orders)
-
 def adjust_leverage(symbol, client):
     client.futures_change_leverage(symbol=symbol, leverage=15)
 
 def adjust_margintype(symbol, client):
     client.futures_change_margin_type(symbol=symbol, marginType='CROSSED')
 
-def my_execute_order(order_type, side, quantity, symbol, my_order_id, timeStamp):
-    print(f"sending order {order_type} - {side} {quantity} {symbol} with {my_order_id}")
-    if my_order_id == 'Open':
+def receive_order(order_type, order_action, quantity, ticker, order_id, timeStamp):
+    if order_id in ["Enter Long", "Enter Short"]:
         # Place a new order
         try:
-            print(f"sending order {order_type} - {side} {quantity} {symbol}")
-            order = client.futures_create_order(symbol=symbol, side=side, type=order_type, quantity=quantity)
-            print("BUY ORDER OK")
+            print(f"sending order {order_id} - {order_action} - {quantity}")
+            order = client.futures_create_order(symbol=ticker, side=order_id, type=order_type, quantity=quantity)
+            print(f"{order_action} ORDER OK")
         except Exception as e:
             print("an exception occured - {}".format(e))
             return False
-        return order
-    elif my_order_id == 'Close':
+        return True
+    elif order_id in ["Exit Long", "Exit Short"]:
         # Cancel an existing order
         try:
-            print(f"canceling order {symbol} - {my_order_id}")
+            print(f"canceling order {order_id} - {order_action}")
             cancel_order = client.futures_cancel_order(symbol=symbol, timestamp=timeStamp)
-            print("CANCEL ORDER OK")
+            print(f"{order_action} ORDER OK")
         except Exception as e:
             print("an exception occured - {}".format(e))
             return False
-        return cancel_order
+        return True
 
 @app.route('/')
 def welcome():
@@ -53,7 +44,7 @@ def webhook():
     data = json.loads(request.data)
 
     # Validate the required fields in the JSON payload
-    required_fields = ['passphrase', 'side', 'quantity', 'ticker', 'action', 'time']
+    required_fields = ['passphrase', 'ticker', 'time']
     if not all(field in data for field in required_fields):
         return {
             "code": "error",
@@ -66,72 +57,52 @@ def webhook():
             "message": "Invalid passphrase"
         }, 401
 
-    order_action = data['action']
+
+    order_id = data['strategy']['order_id']
 
     # Open or close a position
-    if order_action in ["Open Short", "Open Long"]:
+    if order_id in ["Enter Long", "Enter Short"]:
+
+        balances = client.futures_account_balance()
+
+        for item in balances:
+            asset = item['asset']
+            balance = item['balance']
+            if float(balance) > 0:
+                print(f"Asset: {asset}, Balance: {balance}")
+        # Invest 75% of available funds at 30 times leverage
+        quantity = round((round(float(balance), 3) / round(float(data['strategy']['order_price']), 3)) * 30 * 0.75, 3)
+        print(f"{quantity}")
         order_type = FUTURE_ORDER_TYPE_MARKET
-        side = data['side'].upper()
-        quantity = data['quantity']
+        order_id = data['strategy']['order_id']
+        order_action = data['strategy']['order_action']
         ticker = data['ticker']
         timeStamp = data['time']
-        #my_order_id = data['my_order_id']
-        my_order_id = 'Open'
-        my_execute_order(order_type, side, quantity, ticker, my_order_id, '')
+        if order_action not in ["buy", "sell"]:
+            return {
+                "code": "error",
+                "message": "Invalid order action"
+                }, 400
+        order_action = "BUY" if order_action == "buy" else "SELL"
+
+        receive_order(order_type, order_action, quantity, ticker, order_id, '')
         return {
             "code": "success",
             "message": "order executed"
         }
-    elif order_action in ["Close Short", "Close Long"]:
+    elif order_id in ["Exit Long", "Exit Short"]:
+        order_id = data['strategy']['order_id']
+        order_action = data['strategy']['order_action']
         ticker = data['ticker']
         timeStamp = data['time']
-        #my_order_id = data['my_order_id']
-        my_order_id = 'Close'
-        my_execute_order('', '', '', ticker, my_order_id, timeStamp)
-        return {
-            "code": "success",
-            "message": "cancel order executed"
-        }
-    else:
-        return {
-            "code": "error",
-            "message": "Invalid order action"
-        }, 400
+        if order_action not in ["buy", "sell"]:
+            return {
+                "code": "error",
+                "message": "Invalid order action"
+                }, 400
+        order_action = "BUY" if order_action == "buy" else "SELL"
 
-    # Validate the required fields in the JSON payload
-    required_fields = ['passphrase', 'side', 'quantity', 'ticker', 'action', 'time']
-    if not all(field in data for field in required_fields):
-        return {
-            "code": "error",
-            "message": "Missing required fields"
-        }, 400
-
-    if data['passphrase'] != config.WEBHOOK_PASSPHRASE:
-        return {
-            "code": "error",
-            "message": "Invalid passphrase"
-        }, 401
-
-    order_action = data['action']
-
-    # Open or close a position
-    if order_action in ["Open Short", "Open Long"]:
-        order_type = FUTURE_ORDER_TYPE_MARKET
-        side = data['side'].upper()
-        quantity = data['quantity']
-        ticker = data['ticker']
-        timeStamp = data['time']
-        order_id = data['order_id']
-        my_execute_order(order_type, side, quantity, ticker, '', '')
-        return {
-            "code": "success",
-            "message": "order executed"
-        }
-    elif order_action in ["Close Short", "Close Long"]:
-        ticker = data['ticker']
-        timeStamp = data['time']
-        order_id = data['order_id']
-        my_execute_order('', '', '', ticker, '', timeStamp)
+        receive_order('', order_action, '', ticker, order_id, timeStamp)
         return {
             "code": "success",
             "message": "cancel order executed"
