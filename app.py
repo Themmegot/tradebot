@@ -7,37 +7,6 @@ app = Flask(__name__)
 
 client = Client(config.API_KEY, config.API_SECRET, tld='com')
 
-def place_order(order_type, order_action, quantity, ticker, timeStamp):
-    try:
-        print(f"sending order - {order_action} - {quantity}")
-        order = client.futures_create_order(symbol=ticker, side=order_action, type=order_type, quantity=quantity, timestamp=timeStamp)
-        print(f"{order_action} ORDER OK")
-    except Exception as e:
-        print("an exception occurred - {}".format(e))
-        return False
-    return True
-
-def cancel_order(ticker, timeStamp):
-    try:
-        print(f"canceling order")
-        cancel_order = client.futures_cancel_order(symbol=ticker, timestamp=timeStamp)
-        print("CANCEL ORDER OK")
-    except Exception as e:
-        print("an exception occurred - {}".format(e))
-        return False
-    return True
-
-def receive_order(order_type, order_action, quantity, ticker, order_id, timeStamp):
-    if order_id in ["Enter Long", "Enter Short"]:
-        # Place a new order
-        return place_order(order_type, order_action, quantity, ticker, timeStamp)
-    elif order_id in ["Exit Long", "Exit Short"]:
-        # Cancel an existing order
-        return cancel_order(ticker, timeStamp)
-    else:
-        print("Invalid order_id")
-        return False
-
 @app.route('/')
 def welcome():
     return render_template('index.html')
@@ -46,77 +15,116 @@ def welcome():
 def webhook():
     data = json.loads(request.data)
 
+    #order_type = FUTURE_ORDER_TYPE_MARKET
+    order_type = FUTURE_ORDER_TYPE_LIMIT
+    order_id = data['strategy']['order_id']
+    order_action = data['strategy']['order_action']
+    order_price= data['strategy']['order_price']
+    ticker = data['ticker']
+    server_time = client.get_server_time()
+    timeStamp = int(server_time['serverTime'])
+
     # Validate the required fields in the JSON payload
-    required_fields = ['passphrase', 'ticker', 'time']
+    required_fields = ['passphrase', 'ticker']
     if not all(field in data for field in required_fields):
         return {
             "code": "error",
             "message": "Missing required fields"
         }, 400
 
+    # Validate the passphrase in the config.py file
     if data['passphrase'] != config.WEBHOOK_PASSPHRASE:
         return {
             "code": "error",
             "message": "Invalid passphrase"
         }, 401
 
-    order_id = data['strategy']['order_id']
-
-    # Open or close a position
+    # Enter a long or short position
     if order_id in ["Enter Long", "Enter Short"]:
+        print("----------------------")        
+        print(f"   {order_id} TRADE")
+        print("----------------------")
 
+        # Fetch the balance from the futures account
         balances = client.futures_account_balance()
         leverage = 30 # As set in the binance trading platform
         percent_of_equity = 0.75
 
         for item in balances:
-            asset = item['asset']
-            balance = item['balance']
-            if float(balance) > 0:
-                print(f"Asset: {asset}, Balance: {balance}")
-        # Invest 75% of available funds at 30 times leverage
-        quantity = round((round(float(balance), 3) / round(float(data['strategy']['order_price']), 3)) * 30 * 0.75, 3)
-        print(f"{quantity}")
-        order_type = FUTURE_ORDER_TYPE_MARKET
-        order_id = data['strategy']['order_id']
-        order_action = data['strategy']['order_action']
-        ticker = data['ticker']
-        server_time = client.get_server_time()
-        timeStamp = int(server_time['serverTime'])
-        #timeStamp = data['bar']['time']
+            if item['asset'] != data['ticker']:
+                asset = item['asset']
+                balance = item['balance']
+                print(f"Asset: {asset}, Balance: {balance}" )
+                if float(balance) > 0:
+                    quantity = round((round(float(balance), 3) / round(float(data['strategy']['order_price']), 3)) * leverage * percent_of_equity, 3)
+                else:
+                    return {
+                        "code": "error",
+                        "message": "Empty balance"
+                    }, 400
+
+        # If the order action is neither buy or sell, fail the order
         if order_action not in ["buy", "sell"]:
             return {
                 "code": "error",
                 "message": "Invalid order action"
                 }, 400
+        # The alerts create the order action in small caps. This makes sure it is in large caps 
         order_action = "BUY" if order_action == "buy" else "SELL"
 
-        receive_order(order_type, order_action, quantity, ticker, order_id, timeStamp)
+        # Execute the order
+        print(f"{order_id} - {order_action} {quantity} {data['ticker']} @ {order_price}")
+        #client.futures_create_order(symbol=ticker, side=order_action, type=order_type, quantity=quantity, timestamp=timeStamp)
+        client.futures_create_order(symbol=ticker, side=order_action, type=order_type, timeInForce=TIME_IN_FORCE_GTC, quantity=quantity, timestamp=timeStamp, price=order_price)
         return {
             "code": "success",
             "message": "order executed"
-        }
+        }, 200
+    
+    # Exit a long or short position
     elif order_id in ["Exit Long", "Exit Short"]:
-        order_id = data['strategy']['order_id']
-        order_action = data['strategy']['order_action']
-        ticker = data['ticker']
-        server_time = client.get_server_time()
-        timeStamp = int(server_time['serverTime'])
-        #timeStamp = data['bar']['time']
+        print("----------------------")        
+        print(f"   {order_id} TRADE")
+        print("----------------------")
+
+        # Fetch the balance from the futures account
+ 
+        positions = client.futures_account()
+
+        for position in positions['positions']: 
+            if position['symbol'] == data['ticker']:
+                balance = abs(float(position['positionAmt']))
+                asset = position['symbol']
+                print(f"Asset: {asset}, Balance: {balance}" )
+                if float(balance) > 0:
+                    quantity = balance
+                else:
+                    return {
+                        "code": "error",
+                        "message": "Empty balance"
+                    }, 400
+
+        # If the order action is neither buy or sell, fail the order        
         if order_action not in ["buy", "sell"]:
             return {
                 "code": "error",
                 "message": "Invalid order action"
-                }, 400
+            }, 400
+        
+        # The alerts create the order action in small caps. This makes sure it is in large caps
         order_action = "BUY" if order_action == "buy" else "SELL"
-
-        receive_order('', order_action, '', ticker, order_id, timeStamp)
+        # Execute the order
+        print(f"{order_id} - {order_action} {quantity} {data['ticker']} @ {order_price}")
+        #client.futures_create_order(symbol=ticker, side=order_action, type=order_type, quantity=quantity, timestamp=timeStamp)
+        client.futures_create_order(symbol=ticker, side=order_action, type=order_type, timeInForce=TIME_IN_FORCE_GTC, quantity=quantity, timestamp=timeStamp, price=order_price)
         return {
             "code": "success",
             "message": "cancel order executed"
-        }
+        }, 200
     else:
         return {
             "code": "error",
             "message": "Invalid order action"
         }, 400
+      
+  
