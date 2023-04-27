@@ -51,7 +51,7 @@ def webhook():
         percent_of_equity = 0.75
 
         for item in balances:
-            if item['asset'] != data['ticker']:
+            if item['asset'] == "BUSD":
                 asset = item['asset']
                 balance = item['balance']
                 print(f"Asset: {asset}, Balance: {balance}" )
