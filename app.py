@@ -15,8 +15,8 @@ def welcome():
 def webhook():
     data = json.loads(request.data)
 
-    #order_type = FUTURE_ORDER_TYPE_MARKET
-    order_type = FUTURE_ORDER_TYPE_LIMIT
+    order_type = FUTURE_ORDER_TYPE_MARKET
+    #order_type = FUTURE_ORDER_TYPE_LIMIT
     order_id = data['strategy']['order_id']
     order_action = data['strategy']['order_action']
     order_price= data['strategy']['order_price']
@@ -48,7 +48,8 @@ def webhook():
         # Fetch the balance from the futures account
         balances = client.futures_account_balance()
         leverage = 30 # As set in the binance trading platform
-        percent_of_equity = 0.75
+        percent_of_equity = 0.75 # Do not trade with 100%, you will get reckd!
+        #take_profit_percent = 1.1  # 10% take profit target
 
         for item in balances:
             if item['asset'] == "BUSD":
@@ -74,8 +75,23 @@ def webhook():
 
         # Execute the order
         print(f"{order_id} - {order_action} {quantity} {data['ticker']} @ {order_price}")
-        #client.futures_create_order(symbol=ticker, side=order_action, type=order_type, quantity=quantity, timestamp=timeStamp)
-        client.futures_create_order(symbol=ticker, side=order_action, type=order_type, timeInForce=TIME_IN_FORCE_GTC, quantity=quantity, timestamp=timeStamp, price=order_price)
+        client.futures_create_order(symbol=ticker, side=order_action, type=order_type, quantity=quantity, timestamp=timeStamp)
+        #client.futures_create_order(symbol=ticker, side=order_action, type=order_type, timeInForce=TIME_IN_FORCE_GTC, quantity=quantity, timestamp=timeStamp, price=order_price)
+
+        """"
+        # Create the take-profit order
+        take_profit_price = round(order_price * take_profit_percent, 2)
+        client.futures_create_order(
+            symbol=ticker,
+            side="SELL" if order_action == "BUY" else "BUY",
+            type=FUTURE_ORDER_TYPE_LIMIT,
+            quantity=quantity,
+            price=take_profit_price,
+            timeInForce=TIME_IN_FORCE_GTC,
+            reduceOnly=True,
+        )
+        """
+
         return {
             "code": "success",
             "message": "order executed"
@@ -115,8 +131,8 @@ def webhook():
         order_action = "BUY" if order_action == "buy" else "SELL"
         # Execute the order
         print(f"{order_id} - {order_action} {quantity} {data['ticker']} @ {order_price}")
-        #client.futures_create_order(symbol=ticker, side=order_action, type=order_type, quantity=quantity, timestamp=timeStamp)
-        client.futures_create_order(symbol=ticker, side=order_action, type=order_type, timeInForce=TIME_IN_FORCE_GTC, quantity=quantity, timestamp=timeStamp, price=order_price)
+        client.futures_create_order(symbol=ticker, side=order_action, type=order_type, quantity=quantity, timestamp=timeStamp)
+        #client.futures_create_order(symbol=ticker, side=order_action, type=order_type, timeInForce=TIME_IN_FORCE_GTC, quantity=quantity, timestamp=timeStamp, price=order_price)
         return {
             "code": "success",
             "message": "cancel order executed"
