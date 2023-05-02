@@ -1,4 +1,4 @@
-# tradebot
+# Python flask application using the binance api to perform futures orders. 
 Using binance python api to create buy and sell futures orders
 
 Set up the needed files for your python environment by adding the requirements: pip install -r requirments.txt
