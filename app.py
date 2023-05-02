@@ -20,7 +20,6 @@ def webhook():
     order_id = data['strategy']['order_id']
     order_action = data['strategy']['order_action']
     order_price= data['bar']['order_price']
-    #order_price= data['strategy']['order_price']
  
     ticker = data['ticker']
     server_time = client.get_server_time()
@@ -63,7 +62,6 @@ def webhook():
                 balance = item['balance']
                 print(f"Asset: {asset}, Balance: {balance}" )
                 if float(balance) > 0:
-                    #quantity = round((round(float(balance), 3) / round(float(data['strategy']['order_price']), 3)) * leverage * percent_of_equity, 3)
                     quantity = round((round(float(balance), 3) / round(float(data['bar']['order_price']), 3)) * leverage * percent_of_equity, 3)
                 else:
                     return {
