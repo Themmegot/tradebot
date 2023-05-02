@@ -1,25 +1,64 @@
+Close Long
 {
-	"passphrase": "<your password defined in config.py",
-	"time": "{{timenow}}",
-	"exchange": "{{exchange}}",
+	"passphrase": "<your passphrase>",
 	"ticker": "BTCBUSD",
+	"leverage": 30,
+	"percent_of_equity": 0.75,
+	"take_profit_target": 1.05,
 	"bar": {
-		"time": "{{time}}",
-		"open": "{{open}}",
-		"high": "{{high}}",
-		"low": "{{low}}",
-		"close": "{{close}}",
-		"volume": "{{volume}}"
+		"order_price": "{{close}}"
 	},
-	"strategy": {
-		"position_size": "{{strategy.position_size}}",
-		"order_action": "{{strategy.order.action}}",
-		"order_contracts": "{{strategy.order.contracts}}",
-		"order_price": "{{strategy.order.price}}",
-		"order_id": "{{strategy.order.id}}",
-		"market_position": "{{strategy.market_position}}",
-		"market_position_size": "{{strategy.market_position_size}}",
-		"prev_market_position": "{{strategy.prev_market_position}}",
-		"prev_market_position_size": "{{strategy.prev_market_position_size}}"
-	}
+    "strategy": {
+        "order_id": "Exit Long",
+		"order_action": "sell"
+    }
+}
+
+Close Short
+{
+	"passphrase": "<your passphrase>",
+	"ticker": "BTCBUSD",
+	"leverage": 30,
+	"percent_of_equity": 0.75,
+	"take_profit_target": 1.05,
+	"bar": {
+		"order_price": "{{close}}"
+	},
+    "strategy": {
+        "order_id": "Exit Short",
+		"order_action": "buy"
+    }
+}
+
+Open Long
+{
+	"passphrase": "<your passphrase>",
+	"ticker": "BTCBUSD",
+	"leverage": 30,
+	"percent_of_equity": 0.75,
+	"take_profit_target": 1.05,
+	"bar": {
+		"order_price": "{{close}}"
+	},
+    "strategy": {
+        "order_id": "Enter Long",
+		"order_action": "buy"
+    }
+}
+
+
+Open Short
+{
+	"passphrase": "<your passphrase>",
+	"ticker": "BTCBUSD",
+	"leverage": 30,
+	"percent_of_equity": 0.75,
+	"take_profit_target": 1.05,
+	"bar": {
+		"order_price": "{{close}}"
+	},
+    "strategy": {
+        "order_id": "Enter Short",
+		"order_action": "sell"
+    }
 }
