@@ -91,6 +91,7 @@ def webhook():
             take_profit_price = round(float(order_price) * (1 + take_profit_percent / 100), 2)
             #client.futures_create_order(symbol=ticker, side="SELL" if order_action == "BUY" else "BUY", type=FUTURE_ORDER_TYPE_LIMIT, quantity=quantity, price=take_profit_price, timeInForce=TIME_IN_FORCE_GTC, reduceOnly=True)
             print(f"Profit Price {take_profit_price} / Order Price: {order_price}")
+            print("")
         elif order_id == "Enter Short":
             take_profit_price = round(float(order_price) * (1 - take_profit_percent / 100), 2)
             #client.futures_create_order(symbol=ticker, side="SELL" if order_action == "BUY" else "BUY", type=FUTURE_ORDER_TYPE_LIMIT, quantity=quantity, price=take_profit_price, timeInForce=TIME_IN_FORCE_GTC, reduceOnly=True)
