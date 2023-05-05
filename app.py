@@ -103,7 +103,7 @@ def webhook():
 
         return {
             "code": "success",
-            "message": "order executed"
+            "message": "Open order executed"
         }, 200
     
     # Exit a long or short position
@@ -144,7 +144,7 @@ def webhook():
         client.futures_create_order(symbol=ticker, side=order_action, type=order_type, timeInForce=TIME_IN_FORCE_GTC, quantity=quantity, timestamp=timeStamp, price=order_price)
         return {
             "code": "success",
-            "message": "cancel order executed"
+            "message": "Exit order executed"
         }, 200
     else:
         return {
