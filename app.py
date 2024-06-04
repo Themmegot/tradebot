@@ -142,9 +142,9 @@ def webhook():
             status = check_order_status(ticker, main_order['orderId'])
             print(f"Order status: {status}")
             if status == 'FILLED':
-                # Calculate take profit price based on ROI target
-                initial_investment = quantity * adjusted_price
-                target_profit = initial_investment * roi_target
+                # Calculate take profit price based on the margin used for the initial investment
+                initial_margin = (adjusted_price * quantity) / leverage
+                target_profit = initial_margin * roi_target
                 if order_action == "BUY":
                     take_profit_price = adjusted_price + (target_profit / quantity)
                 else:
@@ -164,7 +164,7 @@ def webhook():
             elif status in ['CANCELED', 'REJECTED', 'EXPIRED']:
                 print(f"Order {main_order['orderId']} status: {status}")
                 break
-            sleep(60)  # Wait for 1 second before checking again
+            sleep(1)  # Wait for 1 second before checking again
 
         return {
             "code": "success",
