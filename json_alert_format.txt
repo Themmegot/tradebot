@@ -4,7 +4,7 @@ Close Long
 	"ticker": "BTCBUSD",
 	"leverage": 30,
 	"percent_of_equity": 0.75,
-	"take_profit_target": 1.05,
+	"roi_target": 1.05,
 	"bar": {
 		"order_price": "{{close}}"
 	},
@@ -20,7 +20,7 @@ Close Short
 	"ticker": "BTCBUSD",
 	"leverage": 30,
 	"percent_of_equity": 0.75,
-	"take_profit_target": 1.05,
+	"roi_target": 1.05,
 	"bar": {
 		"order_price": "{{close}}"
 	},
@@ -36,7 +36,7 @@ Open Long
 	"ticker": "BTCBUSD",
 	"leverage": 30,
 	"percent_of_equity": 0.75,
-	"take_profit_target": 1.05,
+	"roi_target": 1.05,
 	"bar": {
 		"order_price": "{{close}}"
 	},
@@ -53,7 +53,7 @@ Open Short
 	"ticker": "BTCBUSD",
 	"leverage": 30,
 	"percent_of_equity": 0.75,
-	"take_profit_target": 1.05,
+	"roi_target": 1.05,
 	"bar": {
 		"order_price": "{{close}}"
 	},
