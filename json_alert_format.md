@@ -42,7 +42,7 @@ trailing_stop_percentage: Optional. The percentage for the trailing stop.
     "trailing_stop_percentage": 0.5  
 }
 
-# Close Long
+# Close Long - example
 {
     "passphrase": "your_webhook_passphrase",
     "strategy": {
