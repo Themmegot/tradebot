@@ -24,67 +24,75 @@ stop_loss_percent: Optional. The percentage at which to set the stop loss.
 
 trailing_stop_percentage: Optional. The percentage for the trailing stop.
 
-# Close Long
+# Open Long - example
 {
-	"passphrase": "<your passphrase>",
-	"ticker": "BTCBUSD",
-	"leverage": 30,
-	"percent_of_equity": 0.75,
-	"roi_target": 1.05,
-	"bar": {
-		"order_price": "{{close}}"
-	},
-    "strategy": {
-        "order_id": "Exit Long",
-		"order_action": "sell"
-    }
-}
-
-# Close Short
-{
-	"passphrase": "<your passphrase>",
-	"ticker": "BTCBUSD",
-	"leverage": 30,
-	"percent_of_equity": 0.75,
-	"roi_target": 1.05,
-	"bar": {
-		"order_price": "{{close}}"
-	},
-    "strategy": {
-        "order_id": "Exit Short",
-		"order_action": "buy"
-    }
-}
-
-# Open Long
-{
-	"passphrase": "<your passphrase>",
-	"ticker": "BTCBUSD",
-	"leverage": 30,
-	"percent_of_equity": 0.75,
-	"roi_target": 1.05,
-	"bar": {
-		"order_price": "{{close}}"
-	},
+    "passphrase": "your_webhook_passphrase",
     "strategy": {
         "order_id": "Enter Long",
-		"order_action": "buy"
-    }
+        "order_action": "BUY"
+    },
+    "ticker": "BTCUSDT",
+    "leverage": 10,
+    "percent_of_equity": 0.25,
+    "bar": {
+        "order_price": "{{close}}"
+    },
+    "take_profit_percent": 25,  
+    "stop_loss_percent": 15,    
+    "trailing_stop_percentage": 0.5  
 }
 
-
-# Open Short
+# Close Long
 {
-	"passphrase": "<your passphrase>",
-	"ticker": "BTCBUSD",
-	"leverage": 30,
-	"percent_of_equity": 0.75,
-	"roi_target": 1.05,
-	"bar": {
-		"order_price": "{{close}}"
-	},
+    "passphrase": "your_webhook_passphrase",
+    "strategy": {
+        "order_id": "Exit Long",
+        "order_action": "SELL"
+    },
+    "ticker": "BTCUSDT",
+    "leverage": 10,
+    "percent_of_equity": 0.25,
+    "bar": {
+        "order_price": "{{close}}"
+    },
+    "take_profit_percent": 25,  
+    "stop_loss_percent": 15,    
+    "trailing_stop_percentage": 0.5  
+}
+
+# Open Short - example
+{
+    "passphrase": "your_webhook_passphrase",
     "strategy": {
         "order_id": "Enter Short",
-		"order_action": "sell"
-    }
+        "order_action": "SELL"
+    },
+    "ticker": "BTCUSDT",
+    "leverage": 10,
+    "percent_of_equity": 0.25,
+    "bar": {
+        "order_price": "{{close}}"
+    },
+    "take_profit_percent": 25,  
+    "stop_loss_percent": 15,    
+    "trailing_stop_percentage": 0.5  
 }
+
+# Close Short - example
+{
+    "passphrase": "your_webhook_passphrase",
+    "strategy": {
+        "order_id": "Exit Short",
+        "order_action": "BUY"
+    },
+    "ticker": "BTCUSDT",
+    "leverage": 10,
+    "percent_of_equity": 0.25,
+    "bar": {
+        "order_price": "{{close}}"
+    },
+    "take_profit_percent": 25,  
+    "stop_loss_percent": 15,    
+    "trailing_stop_percentage": 0.5  
+}
+
