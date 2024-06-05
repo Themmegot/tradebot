@@ -3,7 +3,7 @@ import logging
 from time import sleep
 from flask import Flask, request, jsonify, render_template
 from binance.client import Client
-from binance.enums import FUTURE_ORDER_TYPE_LIMIT, FUTURE_ORDER_TYPE_TAKE_PROFIT, FUTURE_ORDER_TYPE_TRAILING_STOP_MARKET
+from binance.enums import FUTURE_ORDER_TYPE_LIMIT, FUTURE_ORDER_TYPE_TAKE_PROFIT, FUTURE_ORDER_TYPE_TRAILING_STOP_MARKET, FUTURE_ORDER_TYPE_STOP_MARKET
 from binance.exceptions import BinanceAPIException
 import config
 
@@ -21,7 +21,7 @@ def welcome():
     return render_template('index.html')
 
 def validate_request_data(data):
-    required_fields = ['passphrase', 'ticker', 'leverage', 'percent_of_equity', 'roi_target']
+    required_fields = ['passphrase', 'ticker', 'leverage', 'percent_of_equity']
     if not all(field in data for field in required_fields):
         return {
             "code": "error",
@@ -103,14 +103,16 @@ def webhook():
     adjusted_price = get_adjusted_price(ticker, float(order_price))
     leverage = data['leverage']
     percent_of_equity = data['percent_of_equity']
-    roi_target = data['roi_target'] / 100  # Convert percentage to decimal
+    take_profit_percent = data.get('take_profit_percent')  # Get take profit percentage if provided
+    stop_loss_percent = data.get('stop_loss_percent')  # Get stop loss percentage if provided
     trailing_stop_percentage = data.get('trailing_stop_percentage')  # Get trailing stop percentage if provided
 
     logging.info(f"Received request: {data}")
     logging.info(f"Adjusted price: {adjusted_price}")
     logging.info(f"Leverage: {leverage}")
     logging.info(f"Percent of equity: {percent_of_equity}")
-    logging.info(f"ROI target: {roi_target}")
+    logging.info(f"Take profit percent: {take_profit_percent}")
+    logging.info(f"Stop loss percent: {stop_loss_percent}")
     logging.info(f"Trailing stop percentage: {trailing_stop_percentage}")
 
     try:
@@ -152,17 +154,20 @@ def webhook():
                 if status == 'FILLED':
                     initial_margin = (adjusted_price * quantity) / leverage
                     initial_margin = get_adjusted_price(ticker, initial_margin)  # Ensure initial margin is adjusted
-                    target_profit = initial_margin * roi_target
-                    target_profit = get_adjusted_price(ticker, target_profit)  # Ensure target profit is adjusted
-                    if order_action == "BUY":
-                        take_profit_price = adjusted_price + (target_profit / quantity)
-                    else:
-                        take_profit_price = adjusted_price - (target_profit / quantity)
-                    take_profit_price = get_adjusted_price(ticker, take_profit_price)
-
-                    logging.info(f"Take profit price calculation: initial_margin={initial_margin}, target_profit={target_profit}, take_profit_price={take_profit_price}")
-
-                    create_order(ticker, "SELL" if order_action == "BUY" else "BUY", FUTURE_ORDER_TYPE_LIMIT, quantity, take_profit_price)
+                    
+                    if take_profit_percent:
+                        take_profit_target = initial_margin * (take_profit_percent / 100)
+                        take_profit_price = adjusted_price + (take_profit_target / quantity) if order_action == "BUY" else adjusted_price - (take_profit_target / quantity)
+                        take_profit_price = get_adjusted_price(ticker, take_profit_price)
+                        logging.info(f"Take profit price calculation: initial_margin={initial_margin}, take_profit_target={take_profit_target}, take_profit_price={take_profit_price}")
+                        create_order(ticker, "SELL" if order_action == "BUY" else "BUY", FUTURE_ORDER_TYPE_LIMIT, quantity, take_profit_price)
+                    
+                    if stop_loss_percent:
+                        stop_loss_target = initial_margin * (stop_loss_percent / 100)
+                        stop_loss_price = adjusted_price - (stop_loss_target / quantity) if order_action == "BUY" else adjusted_price + (stop_loss_target / quantity)
+                        stop_loss_price = get_adjusted_price(ticker, stop_loss_price)
+                        logging.info(f"Stop loss price calculation: initial_margin={initial_margin}, stop_loss_target={stop_loss_target}, stop_loss_price={stop_loss_price}")
+                        create_order(ticker, "SELL" if order_action == "BUY" else "BUY", FUTURE_ORDER_TYPE_STOP_MARKET, quantity, stop_price=stop_loss_price)
 
                     if trailing_stop_percentage:
                         logging.info(f"Creating trailing stop order with callback rate: {trailing_stop_percentage}")
