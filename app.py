@@ -183,7 +183,7 @@ def webhook():
                 elif status in ['CANCELED', 'REJECTED', 'EXPIRED']:
                     logging.info(f"Order {main_order['orderId']} status: {status}")
                     break
-                sleep(1)  # Wait for 1 second before checking again
+                sleep(15)  # Wait for 1 second before checking again
 
             return jsonify({
                 "code": "success",
