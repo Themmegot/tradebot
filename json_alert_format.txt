@@ -1,4 +1,4 @@
-Close Long
+# Close Long
 {
 	"passphrase": "<your passphrase>",
 	"ticker": "BTCBUSD",
@@ -14,7 +14,7 @@ Close Long
     }
 }
 
-Close Short
+# Close Short
 {
 	"passphrase": "<your passphrase>",
 	"ticker": "BTCBUSD",
@@ -30,7 +30,7 @@ Close Short
     }
 }
 
-Open Long
+# Open Long
 {
 	"passphrase": "<your passphrase>",
 	"ticker": "BTCBUSD",
@@ -47,7 +47,7 @@ Open Long
 }
 
 
-Open Short
+# Open Short
 {
 	"passphrase": "<your passphrase>",
 	"ticker": "BTCBUSD",
