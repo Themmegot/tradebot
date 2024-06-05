@@ -18,9 +18,9 @@ percent_of_equity: The percentage of available equity to be used for the trade.
 
 order_price: The price at which to enter the long position, received from the alert
 
-take_profit_percent: Optional. The percentage of profit at which to take profit.
+take_profit_percent: Optional. The percentage of profit at which to take profit. 
 
-stop_loss_percent: Optional. The percentage at which to set the stop loss.
+stop_loss_percent: Optional. The percentage at which to set the stop loss. 
 
 trailing_stop_percentage: Optional. The percentage for the trailing stop.
 
