@@ -1,4 +1,4 @@
-# tradebot
+# Flask App for parsing of webhook requests in json format from TradingView strategy alerts
 Using binance python api to create buy and sell futures orders
 
 Set up the needed files for your python environment by adding the requirements: pip install -r requirments.txt
