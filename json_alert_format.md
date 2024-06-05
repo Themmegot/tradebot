@@ -1,5 +1,6 @@
 # Explanation of the JSON fields:
-passphrase: The webhook passphrase for validation.
+
+passphrase: The webhook passphrase for validation. Replace "your passphrase" with your actual webhook passphrase defined in your config.py
 
 strategy: Contains the order details.
 
@@ -15,7 +16,7 @@ leverage: The leverage to be used for the trade.
 
 percent_of_equity: The percentage of available equity to be used for the trade.
 
-order_price: The price at which to enter the long position.
+order_price: The price at which to enter the long position, received from the alert
 
 take_profit_percent: Optional. The percentage of profit at which to take profit.
 
